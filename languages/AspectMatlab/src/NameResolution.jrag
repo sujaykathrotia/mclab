@@ -27,6 +27,8 @@ aspect NameResolution{
     syn Function FunctionList.getMainFunction() = getFunction(0);
 
     syn lazy Map<String,Function> FunctionList.getSiblings() = new HashMap<String,Function>();
+    syn lazy Map<String,Function> Methods.getSiblings() = new HashMap<String,Function>();
+    syn lazy Map<String,Function> AspectAction.getSiblings() = new HashMap<String,Function>();
     syn lazy Map<String,Function> FunctionList.getNested()
     {
         HashMap<String,Function> table = new HashMap<String,Function>();
@@ -37,6 +39,8 @@ aspect NameResolution{
         return table;
     }
     syn LocalFunctionLookupInterface FunctionList.getParentFunction() = null;
+    syn LocalFunctionLookupInterface AspectAction.getParentFunction() = null;
+    syn LocalFunctionLookupInterface Methods.getParentFunction() = null;
 
     syn lazy Map<String,Function> Function.getNested()
     {
@@ -46,13 +50,35 @@ aspect NameResolution{
         }
         return table;
     }
-    inh Map<String, Function> Function.getSiblings();
+
+    syn lazy Map<String, Function> Methods.getNested() {
+      HashMap<String, Function> table = new HashMap<String, Function>();
+      for (int i = 0; i < getNumFunction(); i++) {
+        table.put(getFunction(i).getName(), getFunction(i));
+      }
+      return table;
+    }
+
+    syn lazy Map<String, Function> AspectAction.getNested() {
+      HashMap<String, Function> table = new HashMap<String, Function>();
+      for (int i = 0; i < getNumNestedFunction(); i++) {
+        table.put(getNestedFunction(i).getName(), getNestedFunction(i));
+      }
+      return table;
+    }    
+
+    inh Map<String, Function> Function.getSiblings();    
     eq FunctionList.getFunction(int i).getSiblings() = getNested();
+    eq Methods.getFunction(int i).getSiblings() = getNested();
+    eq AspectAction.getNestedFunction(int i).getSiblings() = getNested();
     eq Function.getNestedFunction(int i).getSiblings() = getNested();
     eq ClassDef.getMethod(int i).getSiblings() = new HashMap<String,Function>();
 
+
     inh LocalFunctionLookupInterface Function.getParentFunction(); //TODO - fix this, it errors on functions without parents
     eq FunctionList.getFunction(int i).getParentFunction() = this;
+    eq Methods.getFunction(int i).getParentFunction() = this;
+    eq AspectAction.getNestedFunction(int i).getParentFunction() = this;
     eq Function.getNestedFunction(int i).getParentFunction() = this;
     eq ClassDef.getMethod(int i).getParentFunction() = null; //TODO-JD: fix this
 
@@ -68,6 +94,16 @@ aspect NameResolution{
     {
         return getNested().get(name);
     }
+ 
+    syn Function Methods.lookupFunction( String name )
+    {
+        return getNested().get(name);
+    }                                  
+ 
+    syn Function AspectAction.lookupFunction( String name )
+    {
+        return getNested().get(name);
+    }                                  
 
     //helper function to get all visible functions from a given Function
     //this probably won't be called often
@@ -83,6 +119,14 @@ aspect NameResolution{
         Map<String,Function> table = getParentFunction().getVisible();
         table.putAll(getNested());
         return table;
+    }
+
+    syn Map<String, Function> Methods.getVisible() {
+      return getNested();
+    }
+
+    syn Map<String, Function> AspectAction.getVisible() {
+      return getNested();
     }
 
     //get a set containing all input and output parameters for a function
