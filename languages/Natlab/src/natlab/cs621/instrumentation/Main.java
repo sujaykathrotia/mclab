@@ -1,4 +1,4 @@
-package natlab.cs621;
+package natlab.cs621.instrumentation;
 
 import java.io.File;
 import java.io.IOException;
