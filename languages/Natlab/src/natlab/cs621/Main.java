@@ -43,7 +43,7 @@ public class Main {
     File outputDirectory = createFreshDirectory("instrumented");
     for (Program unit : program.getPrograms()) {
       File outputFile = new File(outputDirectory, unit.getName() + ".m");
-      Files.write(program.getPrettyPrinted(), outputFile, Charsets.UTF_8);
+      Files.write(unit.getPrettyPrinted(), outputFile, Charsets.UTF_8);
     }
   }
 }

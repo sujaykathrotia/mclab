@@ -21,6 +21,9 @@ public class ProfileAssignments extends AbstractNodeCaseHandler {
   public static void instrument(ASTNode<?> node) {
     node.analyze(new ProfileAssignments());
   }
+  
+  // This remembers either the current function name, or "script" for scripts
+  private String currentScope;
 
   // Statements in the skip set won't be analyzed / instrumented.
   // In general we only want to analyze the input program, so we'll
@@ -34,7 +37,17 @@ public class ProfileAssignments extends AbstractNodeCaseHandler {
     return node;
   }
   
-  private String currentScope;
+  private Stmt init() {
+    return skip(Asts.init(currentScope));
+  }
+  
+  private Stmt increment() {
+    return skip(Asts.increment(currentScope));
+  }
+  
+  private Stmt display() {
+    return skip(Asts.display(currentScope));
+  }
   
   // This is the default node case. We recurse on the children from left to right,
   // so we're traversing the AST depth-first.
@@ -49,8 +62,8 @@ public class ProfileAssignments extends AbstractNodeCaseHandler {
   private void instrumentStmtList(List<Stmt> stmts) {
     // insert the counter initialization statement as the first statement,
     // and the counter display as the last statement
-    stmts.insertChild(skip(Asts.init()), 0);
-    stmts.addChild(skip(Asts.display(currentScope)));
+    stmts.insertChild(init(), 0);
+    stmts.addChild(display());
 
     // recurse on children
     caseASTNode(stmts);
@@ -64,7 +77,7 @@ public class ProfileAssignments extends AbstractNodeCaseHandler {
   }
 
   public void caseFunction(Function node) {
-    currentScope = "function::" + node.getName();
+    currentScope = node.getName();
     instrumentStmtList(node.getStmts());
     node.getNestedFunctions().analyze(this);
   }
@@ -79,13 +92,13 @@ public class ProfileAssignments extends AbstractNodeCaseHandler {
    * We do this by adding a counter update as the first statement in the loop body.
    */ 
   @Override
-  public void caseForStmt(ForStmt forNode) {
-    forNode.getStmtList().insertChild(skip(Asts.increment()), 0);
+  public void caseForStmt(ForStmt node) {
+    node.getStmtList().insertChild(increment(), 0);
 
     // skip the assignment in the for loop header, as we're handling it ourselves
-    skip.add(forNode.getAssignStmt());
+    skip.add(node.getAssignStmt());
 
-    caseASTNode(forNode);
+    caseASTNode(node);
   }
 
   @Override
@@ -94,7 +107,7 @@ public class ProfileAssignments extends AbstractNodeCaseHandler {
       return;
     }
 
-    AstUtil.insertAfter(node, skip(Asts.increment()));
+    AstUtil.insertAfter(node, increment());
   }
 
   /**
@@ -108,7 +121,7 @@ public class ProfileAssignments extends AbstractNodeCaseHandler {
       return;
     }
 
-    AstUtil.insertBefore(node, skip(Asts.display(currentScope)));
+    AstUtil.insertBefore(node, display());
 
     // The insertion modified the tree being traversed, so the return statement will
     // be visited again. Add it to skip to avoid this

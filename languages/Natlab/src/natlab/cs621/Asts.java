@@ -17,25 +17,23 @@ import ast.StringLiteralExpr;
 // This class is used by ProfileAssignments to create some ASTs corresponding
 // to MATLAB statements, which will be inserted into the program.
 public class Asts {  
-  private static String COUNTER = "a__counter";
-
   // counter = 0;
-  public static AssignStmt init() {
-    return new AssignStmt(new NameExpr(new Name(COUNTER)), integer(0));
+  public static AssignStmt init(String scope) {
+    return new AssignStmt(new NameExpr(new Name(scope + "_counter")), integer(0));
   }
 
   // counter = counter + 1;
-  public static AssignStmt increment() {
+  public static AssignStmt increment(String scope) {
     return new AssignStmt(
-        new NameExpr(new Name(COUNTER)),
-        new PlusExpr(new NameExpr(new Name(COUNTER)), integer(1)));
+        new NameExpr(new Name(scope + "_counter")),
+        new PlusExpr(new NameExpr(new Name(scope + "_counter")), integer(1)));
   }
 
   //  disp([Total # of runtime assignments made by scope: ', num2str(counter)]);
   public static ExprStmt display(String scope) {
     return new ExprStmt(functionCall("disp", row(
         string("Total # of runtime assignments made by " + scope + ": "),
-        functionCall("num2str", new NameExpr(new Name(COUNTER))))));
+        functionCall("num2str", new NameExpr(new Name(scope + "_counter"))))));
   }
   
   // Helpers, because manual AST construction can be very verbose
