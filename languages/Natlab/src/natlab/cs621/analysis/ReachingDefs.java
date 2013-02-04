@@ -10,6 +10,7 @@ import nodecases.AbstractNodeCaseHandler;
 import analysis.AbstractSimpleStructuralForwardAnalysis;
 import ast.ASTNode;
 import ast.AssignStmt;
+import ast.EmptyStmt;
 import ast.Stmt;
 
 /**
@@ -38,6 +39,13 @@ public class ReachingDefs
   @Override
   public HashMapFlowMap<String, Set<AssignStmt>> newInitialFlow() {
     return new HashMapFlowMap<String, Set<AssignStmt>>();
+  }
+  
+  @Override
+  public void caseStmt(Stmt node) {
+    inFlowSets.put(node, currentInSet.copy());
+    currentInSet.copy(currentOutSet);
+    outFlowSets.put(node, currentOutSet.copy());
   }
 
   @Override
@@ -118,6 +126,13 @@ public class ReachingDefs
       printMap(outFlowSets.get(node));
       System.out.println("}");
       System.out.println();
+      
+      caseASTNode(node);
+    }
+
+    @Override
+    public void caseEmptyStmt(EmptyStmt node) {
+      return;
     }
 
     private void printMap(HashMapFlowMap<String, Set<AssignStmt>> map) {
@@ -129,7 +144,7 @@ public class ReachingDefs
             System.out.print(", ");
           }
           first = false;
-          System.out.print(String.format("[%s at [%d, %d]]", def.getPrettyPrinted(),
+          System.out.print(String.format("[%s at [%d, %d]]", def.getPrettyPrinted().trim(),
               getLine(def), getColumn(def)));
         }
         System.out.println();
