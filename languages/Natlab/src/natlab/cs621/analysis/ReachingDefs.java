@@ -144,8 +144,8 @@ public class ReachingDefs
             System.out.print(", ");
           }
           first = false;
-          System.out.print(String.format("[%s at [%d, %d]]", def.getPrettyPrinted().trim(),
-              getLine(def), getColumn(def)));
+          System.out.print(String.format("[%s at [%d, %d]]", 
+              def.getPrettyPrintedLessComments().trim(), getLine(def), getColumn(def)));
         }
         System.out.println();
       }
