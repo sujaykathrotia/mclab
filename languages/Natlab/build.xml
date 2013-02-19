@@ -186,6 +186,8 @@
       <zipfileset dir="${matlab.bin.dir}/" includes="**/*.class" />
       <fileset dir="${basedir}/resources" />  
       <fileset dir="${basedir}/${bin.dir}" includes="**/*.class" excludes="@{excludes}" />
+      <fileset dir="${basedir}/${src.dir}" includes="**/*.java" excludes="@{excludes}" />
+      <fileset dir="${basedir}/${gen.dir}" includes="**/*.java" excludes="@{excludes}" />
     </jar>
     <echo file="@{basename}.sh">
       ${entrypoint.script.header}
