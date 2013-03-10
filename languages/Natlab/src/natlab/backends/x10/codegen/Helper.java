@@ -2,7 +2,7 @@ package natlab.backends.x10.codegen;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
+import natlab.tame.valueanalysis.components.shape.*;
 import natlab.backends.x10.IRx10.ast.IDInfo;
 import natlab.backends.x10.IRx10.ast.Type;
 import natlab.tame.classes.reference.ClassReference;
@@ -110,6 +110,8 @@ public class Helper {
 			if (null != temp.getisComplexInfo()){
 				id_info.setisComplex(temp.getisComplexInfo().toString());
 			}
+			
+			id_info.setName(ID);
 			return id_info;
 		}
 
@@ -182,13 +184,16 @@ public class Helper {
 		}
 	}
 
-	public static boolean isScalar(ArrayList<Integer> shape) {
-		boolean scal = true;
-		//for (i : shape)
-		if (1==shape.get(0).intValue() )
-			return true;
-
-		return false;
+	public static boolean isScalar(ArrayList shape) {
+		if (shape != null){
+		for (int i =0 ; i<shape.size();i++){
+			  if (null ==shape.get(i) || !("1").equals(shape.get(i).toString())){
+				  return false;
+				  
+			  }
+		  }
+		}
+		return true;
 	}
 
 }
